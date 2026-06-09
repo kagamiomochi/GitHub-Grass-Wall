@@ -5,14 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Grass Wall</title>
     <style>
+        :root {
+            --bg-start: #010409;
+            --bg-end: #161b22;
+            --panel-bg: rgba(22, 27, 34, 0.7);
+            --panel-border: rgba(48, 54, 61, 0.5);
+            --text-color: #c9d1d9;
+            --text-title: #ffffff;
+            --github-green: #39d353;
+            --github-green-dim: #238636;
+            --input-bg: #0d1117;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s ease;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+
         body {
-            background-color: #0d1117;
-            color: #c9d1d9;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
@@ -20,102 +35,207 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            position: relative;
         }
-        .controls {
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(2px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* UIパネル */
+        .ui-panel {
             position: absolute;
             top: 20px;
             z-index: 10;
             display: flex;
-            gap: 10px;
-            background: rgba(22, 27, 34, 0.8);
-            padding: 10px 15px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            backdrop-filter: blur(5px);
-            transition: opacity 0.3s;
+            flex-direction: column;
+            gap: 15px;
+            background: var(--panel-bg);
+            padding: 20px 30px;
+            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            width: fit-content;
         }
-        .controls.fade {
+
+        .ui-panel.fade {
             opacity: 0;
         }
-        .controls:hover {
+
+        .ui-panel:hover {
             opacity: 1;
         }
-        input {
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: #c9d1d9;
-            padding: 6px 12px;
-            font-size: 14px;
+
+        #wallTitle {
+            font-size: 1.1rem;
+            color: var(--text-title);
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.5px;
         }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        input {
+            background-color: var(--input-bg);
+            border: 1px solid rgba(48, 54, 61, 0.8);
+            border-radius: 8px;
+            color: var(--text-color);
+            padding: 10px 16px;
+            font-size: 15px;
+            width: 250px;
+            transition: var(--transition);
+        }
+
         input:focus {
             outline: none;
-            border-color: #58a6ff;
+            border-color: var(--github-green);
+            box-shadow: 0 0 10px rgba(57, 211, 83, 0.3);
         }
+
         button {
-            background-color: #238636;
+            background-color: var(--github-green-dim);
             color: #ffffff;
             border: 1px solid rgba(240, 246, 252, 0.1);
-            border-radius: 6px;
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
         button:hover {
-            background-color: #2ea44f;
+            background-color: var(--github-green);
+            transform: translateY(-1px);
         }
-        .grass-container {
-            width: 90vw;
-            height: 90vh;
+
+        .grass-canvas {
+            width: 85vw;
+            height: 85vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 2;
         }
+
         img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 0 20px rgba(57, 211, 83, 0.2));
+            display: none;
+            
+            filter: invert(1) hue-rotate(180deg) drop-shadow(0 0 25px rgba(57, 211, 83, 0.45));
+            animation: fadeIn 1s ease-out;
+        }
+
+        .loader {
+            display: none;
+            font-size: 2rem;
+            color: var(--github-green);
+            animation: spin 1.5s linear infinite;
+        }
+
+        .error-msg {
+            display: none;
+            color: #f85149;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px rgba(248, 81, 73, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <div class="controls" id="controls">
-        <input type="text" id="username" placeholder="GitHubユーザー名" value="octocat">
-        <button onclick="updateGrass()">草を生やす</button>
+    <div class="ui-panel" id="uiPanel">
+        <h1 id="wallTitle">octocat's Contribution Wall</h1>
+        <div class="controls">
+            <input type="text" id="username" placeholder="GitHub username..." value="octocat">
+            <button onclick="updateGrass()">🌱 生やす</button>
+        </div>
     </div>
 
-    <div class="grass-container">
-        <img id="grass-img" src="https://ghchart.rshah.org/40c463/octocat" alt="GitHub Contribution Grass">
+    <div class="grass-canvas">
+        <img id="grass-img" alt="GitHub Contribution Grass">
+        <div class="loader" id="loader">🌱</div>
+        <div class="error-msg" id="errorMsg">× ユーザーが見つかりません。</div>
     </div>
 
     <script>
         const usernameInput = document.getElementById('username');
         const grassImg = document.getElementById('grass-img');
-        const controls = document.getElementById('controls');
+        const uiPanel = document.getElementById('uiPanel');
+        const wallTitle = document.getElementById('wallTitle');
+        const loader = document.getElementById('loader');
+        const errorMsg = document.getElementById('errorMsg');
 
         function updateGrass() {
             const username = usernameInput.value.trim();
             if (username) {
-                grassImg.src = `https://ghchart.rshah.org/40c463/${username}`;
-                controls.classList.add('fade');
+                grassImg.style.display = 'none';
+                errorMsg.style.display = 'none';
+                loader.style.display = 'block';
+                wallTitle.textContent = `${username}'s Contribution Wall`;
+
+                grassImg.src = `https://ghchart.rshah.org/39d353/${username}`;
             }
         }
 
+        grassImg.onload = () => {
+            loader.style.display = 'none';
+            grassImg.style.display = 'block';
+            if (usernameInput.value.trim()) {
+                uiPanel.classList.add('fade');
+            }
+        };
+
+        grassImg.onerror = () => {
+            loader.style.display = 'none';
+            grassImg.style.display = 'none';
+            errorMsg.style.display = 'block';
+            wallTitle.textContent = 'User Not Found';
+            uiPanel.classList.remove('fade');
+        };
+
         usernameInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                updateGrass();
+            if (e.key === 'Enter') updateGrass();
+        });
+
+        uiPanel.addEventListener('mouseenter', () => uiPanel.classList.remove('fade'));
+        uiPanel.addEventListener('mouseleave', () => {
+            if (usernameInput.value.trim() && grassImg.style.display === 'block') {
+                uiPanel.classList.add('fade');
             }
         });
 
-        controls.addEventListener('mouseenter', () => controls.classList.remove('fade'));
-        controls.addEventListener('mouseleave', () => {
-            if (usernameInput.value.trim()) {
-                controls.classList.add('fade');
-            }
-        });
+        updateGrass();
     </script>
 </body>
 </html>
