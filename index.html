@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Grass Wall</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+            background: rgba(22, 27, 34, 0.8);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.3s;
+        }
+        .controls.fade {
+            opacity: 0;
+        }
+        .controls:hover {
+            opacity: 1;
+        }
+        input {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+        button {
+            background-color: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            border-radius: 6px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2ea44f;
+        }
+        .grass-container {
+            width: 90vw;
+            height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(57, 211, 83, 0.2));
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls" id="controls">
+        <input type="text" id="username" placeholder="GitHubユーザー名" value="octocat">
+        <button onclick="updateGrass()">草を生やす</button>
+    </div>
+
+    <div class="grass-container">
+        <img id="grass-img" src="https://ghchart.rshah.org/40c463/octocat" alt="GitHub Contribution Grass">
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById('username');
+        const grassImg = document.getElementById('grass-img');
+        const controls = document.getElementById('controls');
+
+        function updateGrass() {
+            const username = usernameInput.value.trim();
+            if (username) {
+                grassImg.src = `https://ghchart.rshah.org/40c463/${username}`;
+                controls.classList.add('fade');
+            }
+        }
+
+        usernameInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                updateGrass();
+            }
+        });
+
+        controls.addEventListener('mouseenter', () => controls.classList.remove('fade'));
+        controls.addEventListener('mouseleave', () => {
+            if (usernameInput.value.trim()) {
+                controls.classList.add('fade');
+            }
+        });
+    </script>
+</body>
+</html>
